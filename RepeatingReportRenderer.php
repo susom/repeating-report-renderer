@@ -11,6 +11,7 @@ define("REPEAT_INSTANCES", "repeat_instances");
 /**
  * Class RepeatingReportRenderer
  * @package Stanford\RepeatingReportRenderer
+ * @property int $reportId
  * @property array $report
  * @property array $arms
  * @property array $events
@@ -25,6 +26,8 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
 
 
     use emLoggerTrait;
+
+    private $reportId;
 
     private $report;
 
@@ -48,23 +51,26 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
             parent::__construct();
 
 
-            if (isset($_GET['report_id'])) {
-                $this->setReport(\REDCap::getReport(filter_var($_GET['report_id'], FILTER_SANITIZE_NUMBER_INT),
+            if (isset($_GET['report_id']) || isset($_POST['report_id'])) {
+                $reportId = isset($_GET['report_id']) ? $_GET['report_id'] : $_POST['report_id'];
+                $this->setReport(\REDCap::getReport(filter_var($reportId, FILTER_SANITIZE_NUMBER_INT),
                     'array'));
 
+                $this->setReportId(filter_var($reportId, FILTER_SANITIZE_NUMBER_INT));
 
                 $this->setPrimaryKey(\REDCap::getRecordIdField());
             }
 
-            if (isset($_GET['pid'])) {
-                $this->setProject(new \Project(filter_var($_GET['pid'], FILTER_SANITIZE_NUMBER_INT)));
+            if (isset($_GET['pid']) || isset($_POST['pid'])) {
+                $projectId = isset($_GET['pid']) ? $_GET['pid'] : $_POST['pid'];
+                $this->setProject(new \Project(filter_var($projectId, FILTER_SANITIZE_NUMBER_INT)));
             }
         } catch (\Exception $e) {
             echo $e->getMessage();
         }
     }
 
-    private function processReport()
+    public function processReport()
     {
         try {
             if (!$this->getReport()) {
@@ -293,8 +299,9 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
             foreach ($this->getReport() as $record) {
                 $this->processRecord($record);
             }
+
+            $this->includeFile("view/button.php");
         }
-        $s = 1;
     }
 
     /**
@@ -424,4 +431,30 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
     {
         $this->project = $project;
     }
+
+    /**
+     * @param string $path
+     */
+    public function includeFile($path)
+    {
+        include_once $path;
+    }
+
+    /**
+     * @return int
+     */
+    public function getReportId()
+    {
+        return $this->reportId;
+    }
+
+    /**
+     * @param int $reportId
+     */
+    public function setReportId(int $reportId)
+    {
+        $this->reportId = $reportId;
+    }
+
+
 }
