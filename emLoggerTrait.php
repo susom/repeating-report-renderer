@@ -1,6 +1,8 @@
 <?php
-namespace Stanford\ClassNameHere;
-/** @var ClassNameHere $this */
+
+namespace Stanford\RepeatingReportRenderer;
+
+/** @var RepeatingReportRenderer $this */
 
 trait emLoggerTrait
 {
