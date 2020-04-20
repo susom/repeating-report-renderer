@@ -118,6 +118,9 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
 //                            continue;
 //                        }
 
+                        if ($this->endsWith($field, '_complete')) {
+                            continue;
+                        }
                         // if the value does not exist then add it.
                         if ($row && !array_key_exists($field, $row)) {
                             $row[$field] = $instance[$field];
@@ -200,6 +203,11 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
 
                 $rows = array();
                 foreach ($fieldArray as $field) {
+                    // remove the ones end with complete
+                    if ($this->endsWith($field, '_complete')) {
+                        continue;
+                    }
+
                     foreach ($instance[$ins] as $key => $item) {
                         $rows[$key][$field] = $item[$field];
                     }
@@ -235,18 +243,25 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
     private function processHeaderColumns($fields)
     {
         // add these fields to headerColumns if they do not exist
-        $headerColumns = $this->getHeaderColumns();
+        $columns = $this->getHeaderColumns();
 
         foreach ($fields as $ins => $field) {
-            if ($headerColumns) {
-                $headerColumns = array_merge($headerColumns, $field);
+            if ($columns) {
+                $columns = array_merge($columns, $field);
             } else {
-                $headerColumns = $field;
+                $columns = $field;
             }
         }
         // make sure no duplication
-        $headerColumns = array_unique($headerColumns);
+        $columns = array_unique($columns);
 
+        $headerColumns = array();
+        foreach ($columns as $column) {
+            if ($this->endsWith($column, '_complete')) {
+                continue;
+            }
+            $headerColumns[] = $column;
+        }
         $this->setHeaderColumns($headerColumns);
     }
 
@@ -456,5 +471,13 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
         $this->reportId = $reportId;
     }
 
+    public function endsWith($haystack, $needle)
+    {
+        $length = strlen($needle);
+        if ($length == 0) {
+            return true;
+        }
 
+        return (substr($haystack, -$length) === $needle);
+    }
 }
