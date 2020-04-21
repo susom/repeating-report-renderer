@@ -19,7 +19,10 @@ Button = {
             var html = '<button id="render-repeating-report" class="report_btn jqbuttonmed ui-button ui-corner-all ui-widget" onclick="return false;" style="color:#000066;font-size:12px;"><i class="fas fa-file-download"></i> Render Repeating Instrument</button>';
 
             html = "<div id='children-buttons'>" + html + "</div>";
-            jQuery(document).find("#this_report_title").append(html);
+
+            // find the second div that includes the report buttons and inject html there.
+            var $buttons = jQuery(jQuery(document).find("#report_div > div:nth-child(1)").find(".d-print-none")[1]);
+            $buttons.append(html);
         }
     },
     redirect: function (url) {
