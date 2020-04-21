@@ -155,8 +155,10 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
                 }
             } elseif ($eventId == REPEAT_INSTANCES) {
                 $this->processRepeatInstances($instance, $rows);
-            } elseif (!array_key_exists(REPEAT_INSTANCES, $record)) {
-                // todo when no repeat instance exist.
+            }
+
+            if (!array_key_exists(REPEAT_INSTANCES, $record)) {
+                $this->setRepeatingRecordIntoFinal($rows);
             }
 
         }

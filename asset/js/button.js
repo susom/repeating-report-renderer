@@ -49,6 +49,7 @@ Button = {
                     dom: 'Bfrtip',
                     data: data,
                     pageLength: 50,
+                    bDestroy: true,
                     columns: Button.prepareTableHeaders(columns),
                     buttons: [
                         'copy', 'csv', 'excel', 'pdf', 'print'
