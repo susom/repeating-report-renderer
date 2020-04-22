@@ -9,7 +9,8 @@ try {
     echo json_encode(array(
         'status' => 'success',
         'data' => $module->getFinalData(),
-        'columns' => $module->getHeaderColumns()
+        'columns' => $module->getHeaderColumns(),
+        'file' => $module->getFileName()
     ));
 } catch (\LogicException $e) {
     echo json_encode(array('status' => 'error', 'message' => $e->getMessage()));

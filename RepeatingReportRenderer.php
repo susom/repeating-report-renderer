@@ -8,6 +8,8 @@ require_once "emLoggerTrait.php";
 
 define("REPEAT_INSTANCES", "repeat_instances");
 
+define("CSV_FILE_NAME", "_repeating_report");
+
 /**
  * Class RepeatingReportRenderer
  * @package Stanford\RepeatingReportRenderer
@@ -20,6 +22,7 @@ define("REPEAT_INSTANCES", "repeat_instances");
  * @property array $finalData
  * @property int $primaryKey
  * @property \Project $project
+ * @property string $fileName
  */
 class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
 {
@@ -45,6 +48,7 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
 
     private $project;
 
+    private $fileName;
 
     public function __construct() {
         try {
@@ -81,6 +85,8 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
             foreach ($this->getReport() as $record) {
                 $this->processRecord($record);
             }
+
+            $this->cacheReport();
         } catch (\Exception $e) {
             echo $e->getMessage();
         }
@@ -481,5 +487,100 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
         }
 
         return (substr($haystack, -$length) === $needle);
+    }
+
+    public function generateRandomString($length = 10)
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
+    }
+
+    /**
+     * this function will save generated report into temp csv file that will be cleaned by REDCap in 12 minutes.
+     */
+    private function cacheReport()
+    {
+        $string = strtolower($this->generateRandomString());
+        $prefix = date("YmdHis") . '_' . $string . CSV_FILE_NAME . '.csv';
+        $filename = APP_PATH_TEMP . $prefix;
+        $content[] = $this->getHeaderColumns();
+        foreach ($this->getFinalData() as $row) {
+            $r = array();
+            foreach ($this->getHeaderColumns() as $column) {
+                if (isset($row[$column])) {
+                    $r[$column] = $row[$column];
+                } else {
+                    $r[$column] = '';
+                }
+            }
+            $content[] = $r;
+        }
+
+        file_put_contents($filename, serialize($content));
+        $this->setFileName($prefix);
+    }
+
+    /**
+     * @return string
+     */
+    public function getFileName()
+    {
+        return $this->fileName;
+    }
+
+    /**
+     * @param string $fileName
+     */
+    public function setFileName($fileName)
+    {
+        $this->fileName = $fileName;
+    }
+
+    /** 20200422133832_g74dnr8hzj_repeating_report.csv
+     *  20200422133928_g74dnr8hzj_repeating_report.csv
+     *  /var/www/html/temp/20200422131505_5dgnpwi4vx_correlated_report.csv
+     * load temp csv file of the generated report
+     * @param string $session
+     */
+    public function getCachedResults($session)
+    {
+        $filename = APP_PATH_TEMP . $session;
+        if (file_exists(strtolower($filename))) {
+            $handle = fopen($filename, 'r');
+            $contents = fread($handle, filesize($filename));
+            fclose($handle);
+            $this->setFinalData(unserialize($contents));
+            return true;
+        } else {
+            throw new \LogicException("file not found");
+        }
+    }
+
+    private function downloadCSVFile($filename, $data)
+    {
+        $data = implode("\n", $data);
+        // Download file and then delete it from the server
+        header('Pragma: anytextexeptno-cache', true);
+        header('Content-Type: application/octet-stream"');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        echo $data;
+        exit();
+    }
+
+    /**
+     * csv export
+     */
+    public function csvExport()
+    {
+        foreach ($this->getFinalData() as $row) {
+            $data[] = implode(",", $row);
+        }
+        //finally display content
+        $this->downloadCSVFile(CSV_FILE_NAME . '.csv', $data);
     }
 }

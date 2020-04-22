@@ -13,6 +13,14 @@ Button = {
             Button.abortAllAjax(Button.submitReport());
         });
 
+        /**
+         * export csv
+         */
+        $(document).on('click', '#csv-export', function (e) {
+            e.preventDefault();
+            var link = $("#csv-export-url").val() + "&session=" + $("#csv-export-session").val();
+            window.open(link, '_blank');
+        });
     },
     abortAllAjax: function (callback) {
         $.xhrPool = [];
@@ -55,11 +63,12 @@ Button = {
 
                 var data = response.data;
                 var columns = response.columns;
+
                 //to export large data we saved input into session then pass its name to be used in export
-                $("#inputs-name").val(response.session);
+                $("#csv-export-session").val(response.file);
 
                 columns.defaultContent = '';
-                jQuery("#report_parent_div").after("<div id='repeating-table'><table id=\"report-result\" class=\"display table table-striped table-bordered\"\n" +
+                jQuery("#report_parent_div").after("<div id='repeating-table'><div  class='d-print-none'><button id='csv-export'>CSV Export</button></div><table id=\"report-result\" class=\"display table table-striped table-bordered\"\n" +
                     "               cellspacing=\"0\" width=\"100%\"></table></div>");
 
                 jQuery("#report_table").hide();
@@ -68,10 +77,7 @@ Button = {
                     data: data,
                     pageLength: 50,
                     bDestroy: true,
-                    columns: Button.prepareTableHeaders(columns),
-                    buttons: [
-                        'copy', 'csv', 'excel', 'pdf', 'print'
-                    ]
+                    columns: Button.prepareTableHeaders(columns)
                 });
             },
             error: function (request, error) {
