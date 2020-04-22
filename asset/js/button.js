@@ -13,6 +13,20 @@ Button = {
             Button.abortAllAjax(Button.submitReport());
         });
 
+
+        $body = $("body");
+        /**
+         * add loader in ajax
+         */
+        $(document).on({
+            ajaxStart: function () {
+                $body.addClass("loading");
+            },
+            ajaxStop: function () {
+                $body.removeClass("loading");
+            }
+        });
+
         /**
          * export csv
          */
