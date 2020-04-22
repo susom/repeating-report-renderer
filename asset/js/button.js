@@ -11,8 +11,23 @@ Button = {
          */
         $(document).on('click', '#render-repeating-report', function () {
             Button.submitReport();
+
+            //Button.abortAllAjax();
         });
 
+    },
+    abortAllAjax: function () {
+        $.xhrPool = [];
+        $.xhrPool.abortAll = function () {
+            _.each(this, function (jqXHR) {
+                jqXHR.abort();
+            });
+        };
+        $.ajaxSetup({
+            beforeSend: function (jqXHR) {
+                $.xhrPool.push(jqXHR);
+            }
+        });
     },
     inject: function () {
         if ($("#render-repeating-report").length == 0) {
@@ -44,10 +59,9 @@ Button = {
                 $("#inputs-name").val(response.session);
 
                 columns.defaultContent = '';
-                $("#filters-row").slideUp();
-                $("#buttons-area").hide().removeClass('d-none').slideDown();
-                jQuery("#report_table_wrapper").append("<table id=\"report-result\" class=\"display table table-striped table-bordered\"\n" +
-                    "               cellspacing=\"0\" width=\"100%\"></table>");
+                jQuery("#report_parent_div").after("<div id='repeating-table'><table id=\"report-result\" class=\"display table table-striped table-bordered\"\n" +
+                    "               cellspacing=\"0\" width=\"100%\"></table></div>");
+
                 jQuery("#report_table").hide();
                 Button.table = $('#report-result').DataTable({
                     dom: 'Bfrtip',
