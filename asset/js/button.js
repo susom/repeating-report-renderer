@@ -10,13 +10,11 @@ Button = {
          * Delete filter
          */
         $(document).on('click', '#render-repeating-report', function () {
-            Button.submitReport();
-
-            //Button.abortAllAjax();
+            Button.abortAllAjax(Button.submitReport());
         });
 
     },
-    abortAllAjax: function () {
+    abortAllAjax: function (callback) {
         $.xhrPool = [];
         $.xhrPool.abortAll = function () {
             _.each(this, function (jqXHR) {
@@ -28,6 +26,8 @@ Button = {
                 $.xhrPool.push(jqXHR);
             }
         });
+
+        callback
     },
     inject: function () {
         if ($("#render-repeating-report").length == 0) {
