@@ -316,14 +316,10 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
 
     public function redcap_every_page_top(int $project_id)
     {
-        if (strpos($_SERVER['SCRIPT_NAME'], 'DataExport/index') !== false) {
-            $report = $this->getReport();
-            // each element in the report array is redcap record. which can from different arms/events etc...
-            foreach ($this->getReport() as $record) {
-                $this->processRecord($record);
-            }
-
+        if (strpos($_SERVER['SCRIPT_NAME'], 'DataExport/index') !== false && isset($_GET['report_id'])) {
             $this->includeFile("view/button.php");
+        } elseif (strpos($_SERVER['SCRIPT_NAME'], 'DataExport/index') !== false && !isset($_GET['report_id'])) {
+            $this->includeFile("view/list.php");
         }
     }
 

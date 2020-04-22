@@ -26,7 +26,12 @@
 
 	"links": {
 		"project": [
-
+          {
+            "name": "Report Renderer",
+            "icon": "brick",
+            "url": "view/index.php",
+            "show-header-and-footer": true
+          }
 		],
 		"control-center": [
 
