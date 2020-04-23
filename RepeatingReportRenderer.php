@@ -20,6 +20,7 @@ define("CSV_FILE_NAME", "_repeating_report");
  * @property array $instruments
  * @property array $headerColumns
  * @property array $finalData
+ * @property array $recordKeys
  * @property int $primaryKey
  * @property \Project $project
  * @property string $fileName
@@ -49,6 +50,8 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
     private $project;
 
     private $fileName;
+
+    private $recordKeys;
 
     public function __construct() {
         try {
@@ -98,6 +101,7 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
         // this row will contain the non-repeating data to be attached with repeating data.
         $rows = array();
 
+
         /**
          * each record will contain two sections. first the non-repeating records demographics etc ...
          * then repeat_instance if exist which will include repeating instances.
@@ -105,7 +109,15 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
         foreach ($record as $eventId => $instance) {
 
 
+
             if ($eventId != REPEAT_INSTANCES) {
+
+
+                /**
+                 * get instance keys to be used int
+                 */
+                $this->setRecordKeys(array_keys($instance));
+
                 $fields = $this->getInstrumentsFields($eventId);
 
                 $this->processHeaderColumns($fields);
@@ -129,9 +141,11 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
                         }
                         // if the value does not exist then add it.
                         if ($row && !array_key_exists($field, $row)) {
-                            $row[$field] = $instance[$field];
+                            if (in_array($field, $this->getRecordKeys())) {
+                                $row[$field] = $instance[$field];
 
-                            $row = $this->addEventTorRow($row, $eventId);
+                                $row = $this->addEventTorRow($row, $eventId);
+                            }
                         } else {
 
                             // field is repeated over multiple events so we need to delete the event that does not belong here.
@@ -146,8 +160,10 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
                                 $tempRow = $row;
                             }
 
-                            $tempRow[$field] = $instance[$field];
-                            $tempRow = $this->addEventTorRow($tempRow, $eventId);
+                            if (in_array($field, $this->getRecordKeys())) {
+                                $tempRow[$field] = $instance[$field];
+                                $tempRow = $this->addEventTorRow($tempRow, $eventId);
+                            }
                         }
                     }
 
@@ -217,6 +233,9 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
                     }
 
                     foreach ($instance[$ins] as $key => $item) {
+
+                        $this->setRecordKeys(array_keys($item));
+
                         $rows[$key][$field] = $item[$field];
                     }
                 }
@@ -254,28 +273,33 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
         $columns = $this->getHeaderColumns();
         foreach ($fields as $ins => $field) {
             if ($columns) {
-                $this->emLog("columns :" . count($columns));
-                $this->emLog("fields :" . count($field));
+//                $this->emLog("columns :" . count($columns));
+//                $this->emLog("fields :" . count($field));
                 foreach ($field as $item) {
                     $columns[] = $item;
                 }
-                $this->emLog("merge :" . count($columns));
+//                $this->emLog("merge :" . count($columns));
             } else {
-                $this->emLog("instrument name :" . $ins);
+//                $this->emLog("instrument name :" . $ins);
                 $columns = $field;
             }
         }
         // make sure no duplication
         $columns = array_unique($columns);
-        $this->emLog("after unique :" . count($columns));
+        //       $this->emLog("after unique :" . count($columns));
         $headerColumns = array();
         foreach ($columns as $column) {
             if ($this->endsWith($column, '_complete')) {
                 continue;
             }
-            $headerColumns[] = $column;
+//            $this->emLog("record keys  :" . count($this->getRecordKeys()));
+            // only add columns defined in the report
+            if (in_array($column, $this->getRecordKeys())) {
+                $headerColumns[] = $column;
+            }
+
         }
-        $this->emLog("final header :" . count($headerColumns));
+//        $this->emLog("final header :" . count($headerColumns));
         $this->setHeaderColumns($headerColumns);
     }
 
@@ -585,4 +609,22 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
         //finally display content
         $this->downloadCSVFile(CSV_FILE_NAME . '.csv', $data);
     }
+
+    /**
+     * @return array
+     */
+    public function getRecordKeys()
+    {
+        return $this->recordKeys;
+    }
+
+    /**
+     * @param array $recordKeys
+     */
+    public function setRecordKeys($recordKeys)
+    {
+        $this->recordKeys = $recordKeys;
+    }
+
+
 }
