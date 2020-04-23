@@ -254,16 +254,17 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
         $columns = $this->getHeaderColumns();
         foreach ($fields as $ins => $field) {
             if ($columns) {
+
                 $columns = array_merge($columns, $field);
+                $this->emLog("merge :" . count($columns));
             } else {
-                $this->emLog($ins);
-                $this->emLog($field);
+                $this->emLog("instrument name :" . $ins);
                 $columns = $field;
             }
         }
         // make sure no duplication
         $columns = array_unique($columns);
-
+        $this->emLog("after unique :" . count($columns));
         $headerColumns = array();
         foreach ($columns as $column) {
             if ($this->endsWith($column, '_complete')) {
@@ -271,6 +272,7 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
             }
             $headerColumns[] = $column;
         }
+        $this->emLog("final header :" . count($headerColumns));
         $this->setHeaderColumns($headerColumns);
     }
 
