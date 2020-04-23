@@ -252,11 +252,12 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
     {
         // add these fields to headerColumns if they do not exist
         $columns = $this->getHeaderColumns();
-        $this->emLog($columns);
         foreach ($fields as $ins => $field) {
             if ($columns) {
                 $columns = array_merge($columns, $field);
             } else {
+                $this->emLog($ins);
+                $this->emLog($field);
                 $columns = $field;
             }
         }
