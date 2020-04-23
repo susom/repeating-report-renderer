@@ -256,7 +256,9 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
             if ($columns) {
                 $this->emLog("columns :" . count($columns));
                 $this->emLog("fields :" . count($field));
-                $columns = array_merge($columns, $field);
+                foreach ($field as $item) {
+                    $columns[] = $item;
+                }
                 $this->emLog("merge :" . count($columns));
             } else {
                 $this->emLog("instrument name :" . $ins);
