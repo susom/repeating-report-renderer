@@ -254,7 +254,8 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
         $columns = $this->getHeaderColumns();
         foreach ($fields as $ins => $field) {
             if ($columns) {
-
+                $this->emLog("columns :" . count($columns));
+                $this->emLog("fields :" . count($field));
                 $columns = array_merge($columns, $field);
                 $this->emLog("merge :" . count($columns));
             } else {
