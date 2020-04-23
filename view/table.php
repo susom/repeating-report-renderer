@@ -6,6 +6,7 @@ namespace Stanford\RepeatingReportRenderer;
 
 try {
     $module->processReport();
+    $module->emLog($module->getHeaderColumns());
     echo json_encode(array(
         'status' => 'success',
         'data' => $module->getFinalData(),
