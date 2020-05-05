@@ -500,7 +500,7 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
     /**
      * @param int $reportId
      */
-    public function setReportId(int $reportId)
+    public function setReportId($reportId)
     {
         $this->reportId = $reportId;
     }
