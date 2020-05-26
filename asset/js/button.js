@@ -1,5 +1,7 @@
 Button = {
     url: "",
+    exportURL: "",
+    session: '',
     report_id: "",
     project_id: "",
     table: null,
@@ -32,7 +34,7 @@ Button = {
          */
         $(document).on('click', '#csv-export', function (e) {
             e.preventDefault();
-            var link = $("#csv-export-url").val() + "&session=" + $("#csv-export-session").val();
+            var link = Button.exportURL + "&session=" + Button.session;
             window.open(link, '_blank');
         });
     },
@@ -79,7 +81,9 @@ Button = {
                 var columns = response.columns;
 
                 //to export large data we saved input into session then pass its name to be used in export
-                $("#csv-export-session").val(response.file);
+                //$("#csv-export-session").val(response.file);
+                Button.session = response.file;
+
 
                 columns.defaultContent = '';
                 jQuery("#report_parent_div").after("<div id='repeating-table'><div  class='d-print-none'><button id='csv-export'>CSV Export</button></div><table id=\"report-result\" class=\"display table table-striped table-bordered\"\n" +

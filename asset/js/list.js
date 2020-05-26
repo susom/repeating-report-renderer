@@ -1,5 +1,6 @@
 List = {
     url: "",
+    indexURL: "",
     report_id: "",
     project_id: "",
     table: null,
@@ -13,7 +14,7 @@ List = {
         });
     },
     generateButton: function (reportId) {
-        var url = $("#csv-export-url").val() + "&report_id=" + reportId
+        var url = List.indexURL + "&report_id=" + reportId
         var html = '<hr><button class="data_export_btn jqbuttonmed ui-button ui-corner-all ui-widget" onclick=\"return List.redirect(\'' + url + '\');\" style=\"color:#000066;margin:0 0 0 5px;font-size:11px;\"><i class=\"fas fa-file-download\"></i> Repeating Renderer</button>';
         return html;
     },

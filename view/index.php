@@ -55,14 +55,15 @@ try {
     </div>
 </div>
 <div class="loader"><!-- Place at bottom of page --></div>
-<input type="hidden" id="csv-export-url" value="<?php echo $module->getUrl('view/csv_export.php') ?>">
-<input type="hidden" id="csv-export-session" value="">
+<!--<input type="hidden" id="csv-export-url" value="--><?php //echo $module->getUrl('view/csv_export.php')
+?><!--">-->
+<!--<input type="hidden" id="csv-export-session" value="">-->
 <script src="<?php echo $module->getUrl('asset/js/button.js') ?>"></script>
 <script>
     Button.url = "<?php echo $module->getUrl('view/table.php', false, false) ?>"
     Button.report_id = "<?php echo $module->getReportId() ?>"
     Button.project_id = "<?php echo $module->getProjectId() ?>"
-
+    Button.exportURL = "<?php echo $module->getUrl('view/csv_export.php', false, true) ?>"
     // manually submit this
     Button.submitReport()
 </script>
