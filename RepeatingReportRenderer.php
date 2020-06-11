@@ -319,7 +319,10 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
 
         }
 //        $this->emLog("final header :" . count($headerColumns));
-        $this->setHeaderColumns($headerColumns);
+        if (!empty($headerColumns)) {
+            $this->setHeaderColumns($headerColumns);
+        }
+
     }
 
     private function getInstrumentsFields($eventId)
@@ -614,7 +617,7 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
         header('Content-Type: application/octet-stream"');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         echo $data;
-        exit();
+        $this->exitAfterHook();
     }
 
     /**
