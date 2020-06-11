@@ -24,6 +24,7 @@ define("CSV_FILE_NAME", "_repeating_report");
  * @property int $primaryKey
  * @property \Project $project
  * @property string $fileName
+ * @property array $fieldEventId
  */
 class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
 {
@@ -53,7 +54,10 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
 
     private $recordKeys;
 
-    public function __construct() {
+    private $fieldEventId;
+
+    public function __construct()
+    {
         try {
             parent::__construct();
 
@@ -109,7 +113,6 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
         foreach ($record as $eventId => $instance) {
 
 
-
             if ($eventId != REPEAT_INSTANCES) {
 
 
@@ -131,6 +134,10 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
                     }
 
                     foreach ($fieldArray as $field) {
+                        # if the field is not part of required fields then skip from start.
+                        if (!in_array($field, $this->getRecordKeys())) {
+                            continue;
+                        }
                         // no need to include record_id field
 //                        if($field == $this->getPrimaryKey()){
 //                            continue;
@@ -141,16 +148,14 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
                         }
                         // if the value does not exist then add it.
                         if ($row && !array_key_exists($field, $row)) {
-                            if (in_array($field, $this->getRecordKeys())) {
-                                $row[$field] = $instance[$field];
+                            $row[$field] = $instance[$field];
 
-                                $row = $this->addEventTorRow($row, $eventId);
-                            }
+                            $row = $this->addEventTorRow($row, $eventId);
                         } else {
 
                             // field is repeated over multiple events so we need to delete the event that does not belong here.
                             if ($row) {
-                                $eid = $this->getEventIdFromThatHadRepeatedField($field, $eventId);
+                                $eid = $this->getEventIdFromRepeatedField($field, $eventId);
                                 $index = array_search($eid, $row['events']);
                                 unset($row['events'][$index]);
                                 unset($eid);
@@ -160,10 +165,8 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
                                 $tempRow = $row;
                             }
 
-                            if (in_array($field, $this->getRecordKeys())) {
-                                $tempRow[$field] = $instance[$field];
-                                $tempRow = $this->addEventTorRow($tempRow, $eventId);
-                            }
+                            $tempRow[$field] = $instance[$field];
+                            $tempRow = $this->addEventTorRow($tempRow, $eventId);
                         }
                     }
 
@@ -186,21 +189,27 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
         }
     }
 
-    private function getEventIdFromThatHadRepeatedField($field, $currentEventId)
+    private function getEventIdFromRepeatedField($field, $currentEventId)
     {
-        $events = $this->getEvents();
-        foreach ($events as $id => $event) {
-            foreach ($event as $item) {
-                if (!is_array($item)) {
-                    continue;
-                } else {
-                    // if the id is not current event and the field in the event instruments.
-                    if ($id != $currentEventId && in_array($field, $item)) {
-                        return $id;
+        if (!isset($this->fieldEventId[$field])) {
+            $events = $this->getEvents();
+            foreach ($events as $id => $event) {
+                foreach ($event as $item) {
+                    if (!is_array($item)) {
+                        continue;
+                    } else {
+                        // if the id is not current event and the field in the event instruments.
+                        if ($id != $currentEventId && in_array($field, $item)) {
+                            $this->fieldEventId[$field] = $id;
+                            return $id;
+                        }
                     }
                 }
             }
+        } else {
+            return $this->fieldEventId[$field];
         }
+
     }
 
     private function addEventTorRow($row, $eventId)
@@ -271,19 +280,29 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
     {
         // add these fields to headerColumns if they do not exist
         $columns = $this->getHeaderColumns();
-        foreach ($fields as $ins => $field) {
-            if ($columns) {
-//                $this->emLog("columns :" . count($columns));
-//                $this->emLog("fields :" . count($field));
-                foreach ($field as $item) {
-                    $columns[] = $item;
-                }
-//                $this->emLog("merge :" . count($columns));
-            } else {
-//                $this->emLog("instrument name :" . $ins);
-                $columns = $field;
-            }
+
+        # merge all instruments arrays together
+        $all = call_user_func_array('array_merge', $fields);
+//        foreach ($fields as $ins => $field) {
+//            if ($columns) {
+////                $this->emLog("columns :" . count($columns));
+////                $this->emLog("fields :" . count($field));
+//                foreach ($field as $item) {
+//                    $columns[] = $item;
+//                }
+////                $this->emLog("merge :" . count($columns));
+//            } else {
+////                $this->emLog("instrument name :" . $ins);
+//                $columns = $field;
+//            }
+//        }
+
+        if (is_null($columns)) {
+            $columns = $all;
+        } else {
+            $columns = array_merge($columns, $all);
         }
+
         // make sure no duplication
         $columns = array_unique($columns);
         //       $this->emLog("after unique :" . count($columns));
@@ -314,7 +333,7 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
                 if ($events[$eventId][$instrument]) {
                     $result[$instrument] = $events[$eventId][$instrument];
                     continue;
-                } else {
+                } elseif (is_string($instrument)) {
                     $fields = \REDCap::getFieldNames($instrument);
                     $events[$eventId][$instrument] = $result[$instrument] = $fields;
                 }
