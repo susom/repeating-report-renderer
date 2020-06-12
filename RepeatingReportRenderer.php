@@ -268,8 +268,15 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
 
     private function setRepeatingRecordIntoFinal($finalData)
     {
+        $headers = $this->getHeaderColumns();
         for ($i = 0; $i < count($finalData); $i++) {
             unset($finalData[$i]['events']);
+            if (empty($headers)) {
+                $headers = array_keys($finalData[$i]);
+            } else {
+                $headers = array_merge($headers, array_keys($finalData[$i]));
+                $headers = array_unique($headers);
+            }
         }
         if ($final = $this->getFinalData()) {
             $final = array_merge($final, $finalData);
@@ -277,6 +284,7 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
         } else {
             $this->setFinalData($finalData);
         }
+        $this->setHeaderColumns($headers);
     }
 
     private function processHeaderColumns($fields)
@@ -559,12 +567,10 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
         $string = strtolower($this->generateRandomString());
         $prefix = date("YmdHis") . '_' . $string . CSV_FILE_NAME . '.csv';
         $filename = APP_PATH_TEMP . $prefix;
-        $data = $this->getFinalData();
-        $headers = array_keys($data[0]);
-        $content[] = $headers;
-        foreach ($data as $row) {
+        $content[] = $this->getHeaderColumns();
+        foreach ($this->getFinalData() as $row) {
             $r = array();
-            foreach ($headers as $column) {
+            foreach ($this->getHeaderColumns() as $column) {
                 if (isset($row[$column])) {
                     $r[$column] = $row[$column];
                 } else {
@@ -622,7 +628,7 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
         header('Content-Type: application/octet-stream"');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         echo $data;
-        exit();
+        $this->exitAfterHook();
     }
 
     /**

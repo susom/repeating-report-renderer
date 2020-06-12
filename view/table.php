@@ -8,17 +8,10 @@ try {
     $module->processReport();
 //    $module->emLog($module->getHeaderColumns());
 
-    $headers = $module->getHeaderColumns();
-    $data = $module->getFinalData();
-    # some special cases no header available then we need to get the header from
-    if (empty($headers)) {
-        $headers = array_keys($data[0]);
-    }
-
     echo json_encode(array(
         'status' => 'success',
-        'data' => $data,
-        'columns' => $headers,
+        'data' => $module->getFinalData(),
+        'columns' => $module->getHeaderColumns(),
         'file' => $module->getFileName()
     ));
 } catch (\LogicException $e) {
