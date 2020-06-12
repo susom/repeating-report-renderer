@@ -123,7 +123,7 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
 
                 $fields = $this->getInstrumentsFields($eventId);
 
-                $this->processHeaderColumns($fields);
+                //$this->processHeaderColumns($fields);
 
                 // we need this because to get the permutation of all non-repeating
                 $row = end($rows);
@@ -225,7 +225,7 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
         foreach ($repeatingInstances as $eventId => $instance) {
             $fields = $this->getInstrumentsFields($eventId);
 
-            $this->processHeaderColumns($fields);
+            //$this->processHeaderColumns($fields);
             foreach ($fields as $ins => $fieldArray) {
 
 
@@ -268,6 +268,9 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
 
     private function setRepeatingRecordIntoFinal($finalData)
     {
+        for ($i = 0; $i < count($finalData); $i++) {
+            unset($finalData[$i]['events']);
+        }
         if ($final = $this->getFinalData()) {
             $final = array_merge($final, $finalData);
             $this->setFinalData($final);
@@ -278,50 +281,50 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
 
     private function processHeaderColumns($fields)
     {
-        // add these fields to headerColumns if they do not exist
-        $columns = $this->getHeaderColumns();
-
-        # merge all instruments arrays together
-        $all = call_user_func_array('array_merge', $fields);
-//        foreach ($fields as $ins => $field) {
-//            if ($columns) {
-////                $this->emLog("columns :" . count($columns));
-////                $this->emLog("fields :" . count($field));
-//                foreach ($field as $item) {
-//                    $columns[] = $item;
-//                }
-////                $this->emLog("merge :" . count($columns));
-//            } else {
-////                $this->emLog("instrument name :" . $ins);
-//                $columns = $field;
-//            }
+//        // add these fields to headerColumns if they do not exist
+//        $columns = $this->getHeaderColumns();
+//
+//        # merge all instruments arrays together
+//        $all = call_user_func_array('array_merge', $fields);
+////        foreach ($fields as $ins => $field) {
+////            if ($columns) {
+//////                $this->emLog("columns :" . count($columns));
+//////                $this->emLog("fields :" . count($field));
+////                foreach ($field as $item) {
+////                    $columns[] = $item;
+////                }
+//////                $this->emLog("merge :" . count($columns));
+////            } else {
+//////                $this->emLog("instrument name :" . $ins);
+////                $columns = $field;
+////            }
+////        }
+//
+//        if (is_null($columns)) {
+//            $columns = $all;
+//        } else {
+//            $columns = array_merge($columns, $all);
 //        }
-
-        if (is_null($columns)) {
-            $columns = $all;
-        } else {
-            $columns = array_merge($columns, $all);
-        }
-
-        // make sure no duplication
-        $columns = array_unique($columns);
-        //       $this->emLog("after unique :" . count($columns));
-        $headerColumns = array();
-        foreach ($columns as $column) {
-            if ($this->endsWith($column, '_complete')) {
-                continue;
-            }
-//            $this->emLog("record keys  :" . count($this->getRecordKeys()));
-            // only add columns defined in the report
-            if (in_array($column, $this->getRecordKeys())) {
-                $headerColumns[] = $column;
-            }
-
-        }
-//        $this->emLog("final header :" . count($headerColumns));
-        if (!empty($headerColumns)) {
-            $this->setHeaderColumns($headerColumns);
-        }
+//
+//        // make sure no duplication
+//        $columns = array_unique($columns);
+//        //       $this->emLog("after unique :" . count($columns));
+//        $headerColumns = array();
+//        foreach ($columns as $column) {
+//            if ($this->endsWith($column, '_complete')) {
+//                continue;
+//            }
+////            $this->emLog("record keys  :" . count($this->getRecordKeys()));
+//            // only add columns defined in the report
+//            if (in_array($column, $this->getRecordKeys())) {
+//                $headerColumns[] = $column;
+//            }
+//
+//        }
+////        $this->emLog("final header :" . count($headerColumns));
+//        if (!empty($headerColumns)) {
+//            $this->setHeaderColumns($headerColumns);
+//        }
 
     }
 
@@ -556,10 +559,12 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
         $string = strtolower($this->generateRandomString());
         $prefix = date("YmdHis") . '_' . $string . CSV_FILE_NAME . '.csv';
         $filename = APP_PATH_TEMP . $prefix;
-        $content[] = $this->getHeaderColumns();
-        foreach ($this->getFinalData() as $row) {
+        $data = $this->getFinalData();
+        $headers = array_keys($data[0]);
+        $content[] = $headers;
+        foreach ($data as $row) {
             $r = array();
-            foreach ($this->getHeaderColumns() as $column) {
+            foreach ($headers as $column) {
                 if (isset($row[$column])) {
                     $r[$column] = $row[$column];
                 } else {
@@ -617,7 +622,7 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
         header('Content-Type: application/octet-stream"');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         echo $data;
-        $this->exitAfterHook();
+        exit();
     }
 
     /**
