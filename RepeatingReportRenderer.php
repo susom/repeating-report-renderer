@@ -67,15 +67,16 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
 
             if (isset($_GET['report_id']) || isset($_POST['report_id'])) {
                 $reportId = isset($_GET['report_id']) ? $_GET['report_id'] : $_POST['report_id'];
-                $this->setReport(\REDCap::getReport(filter_var($reportId, FILTER_SANITIZE_NUMBER_INT),
-                    'array'));
-
                 $this->setReportId(filter_var($reportId, FILTER_SANITIZE_NUMBER_INT));
 
-                $this->setPrimaryKey(\REDCap::getRecordIdField());
-
-                #set data dictionary to be used when create report table
-                $this->setDataDictionary(\REDCap::getDataDictionary($this->getProjectId(), 'array'));
+//
+//                var_dump($this->getReport());
+////                $this->setReportId(filter_var($reportId, FILTER_SANITIZE_NUMBER_INT));
+////
+////                $this->setPrimaryKey(\REDCap::getRecordIdField());
+////
+////                #set data dictionary to be used when create report table
+////                $this->setDataDictionary(\REDCap::getDataDictionary($this->getProjectId(), 'array'));
             }
 
             if (isset($_GET['pid']) || isset($_POST['pid'])) {
@@ -90,6 +91,8 @@ class RepeatingReportRenderer extends \ExternalModules\AbstractExternalModule
     public function processReport()
     {
         try {
+            $this->setReport(\REDCap::getReport($this->getReportId(),
+                'array'));
             if (!$this->getReport()) {
                 throw new \Exception("Report does not exist");
             }

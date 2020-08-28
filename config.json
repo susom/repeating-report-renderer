@@ -1,38 +1,33 @@
 {
-  "name": "RepeatingReportRenderer",
-  "namespace": "Stanford\\RepeatingReportRenderer",
-  "description": "EM to display REDCap repeating data report in a square layout",
-
-	"documentation": "README.md",
-
-	"authors": [
-		{
-			"name": "Andrew Martin",
-			"email": "andy123@stanford.edu",
-			"institution": "Stanford University"
+    "name": "Repeating Report Renderer",
+    "namespace": "Stanford\\RepeatingReportRenderer",
+    "description": "EM to display REDCap repeating data report in a square layout",
+    "documentation": "README.md",
+    "authors": [
+        {
+            "name": "Andrew Martin",
+            "email": "andy123@stanford.edu",
+            "institution": "Stanford University"
         },
-      {
-        "name": "Ihab Zeedia",
-        "email": "ihabz@stanford.edu",
-        "institution": "Stanford University"
-      }
-	],
-
-	"permissions": [
-      "redcap_every_page_top"
-	],
-	
-	"enable-every-page-hooks-on-system-pages": false,	
-
-	"links": {
-		"project": [
-          {
-            "name": "Report Renderer",
-            "icon": "brick",
-            "url": "view/index.php",
-            "show-header-and-footer": true
-          }
-		],
+        {
+            "name": "Ihab Zeedia",
+            "email": "ihabz@stanford.edu",
+            "institution": "Stanford University"
+        }
+    ],
+    "permissions": [
+        "redcap_every_page_top"
+    ],
+    "enable-every-page-hooks-on-system-pages": false,
+    "links": {
+        "project": [
+            {
+                "name": "Report Renderer",
+                "icon": "brick",
+                "url": "view/index.php",
+                "show-header-and-footer": true
+            }
+        ],
 		"control-center": [
 
 		]
